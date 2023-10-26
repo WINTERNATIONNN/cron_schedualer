@@ -2,46 +2,29 @@ from __future__ import annotations
 
 import calendar
 from datetime import date, datetime, time
-from datetime import timedelta as td
 from datetime import timezone
 from enum import IntEnum
 from typing import Set, Tuple, Union, cast
-from .GetText import GetText
-from .CasingTypeEnum import CasingTypeEnum
-from .DescriptionTypeEnum import DescriptionTypeEnum
 from .ExpressionParser import ExpressionParser
 from .Options import Options
-from .StringBuilder import StringBuilder
-from .Exception import FormatException, WrongArgumentException
-
-UTC = timezone.utc
 
 SpecItem = Union[int, Tuple[int, int]]
 
-RANGES = [
-    range(0, 60),
-    range(0, 24),
-    range(1, 32),
-    range(1, 13),
-    range(0, 8),
-]
-SYMBOLIC_DAYS = "SUN MON TUE WED THU FRI SAT".split()
-SYMBOLIC_MONTHS = "JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC".split()
-DAYS_IN_MONTH = [-1, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-FIELD_NAMES = ["minute", "hour", "day-of-month", "month", "day-of-week"]
+MIN_STAMP_FOR_SECOND_N_MINUTE = 0
+MAX_STAMP_FOR_SECOND_N_MINUTE = 59
+MIN_STAMP_FOR_HOUR = 0
+MAX_STAMP_FOR_HOUR = 24
 
 
 class ExpressionSchedular(object):
 
-    LAST = -1000
-    LAST_WEEKDAY = -1001
     _expression_parts = []
     _expression = ''
     _cur_parts = []
     _qt = datetime.now()
     _nt = datetime.__new__
 
-    def __init__(self, expression, qt: datetime, options=None):
+    def __init__(self, expression, qt: date, options=None):
         """Initializes a new instance of the ExpressionDescriptor
 
         Args:
@@ -56,50 +39,72 @@ class ExpressionSchedular(object):
         self._expression = expression
         self._options = options
         self._expression_parts = []
-
         self._qt = qt  # query time
 
         parser = ExpressionParser(self._expression, self._options)
         self._expression_parts = parser.parse()
-        
-        
-     
 
-    def get_time_list(self,epr,min_stamp,max_stamp):
-        """Returns the year or month of next schedule timestamp trigger by the given expression
+
+    def get_schedule_timetable(self):
+        timetable = []
+        yr_of_next = self.get_next_year_or_month(self._expression_parts[6], self._qt.year)
+        month_of_next = self.get_next_year_or_month(self._expression_parts[4], self._qt.month)
+        day_of_next = self.get_next_date(yr_of_next, month_of_next)
+        if yr_of_next == self._qt.year and month_of_next == self._qt.month and day_of_next == self._qt.day:
+            secondlist = self.get_time_list(self._expression_parts[0], 0, 59)
+            minutelist = self.get_time_list(self._expression_parts[1], 0, 59)
+            hourlist = self.get_time_list(self._expression_parts[2], 0, 23)
+            for hour in hourlist:
+                for minute in minutelist:
+                    print(time(int(hour), int(minute)))
+                    timetable.append(time(int(hour), int(minute)))
+                    # for second in secondlist:
+                    # print(time(int(hour), int(minute), int(second)))
+
+            return timetable
+        else:
+            return []
+
+    def get_time_list(self, epr, min_stamp, max_stamp):
+        """Returns the list of timestamp (hour, minute, second) trigger by the given expression
+
         Args:
-            epr: the expression whether year or month
+            epr: the expression of (hour, minute, second)
         Returns:
-            -1: no next schedule
-            int: the value of year of month of next schedule
+            None: no running schedule
+            list: list of timestamp
 
         """
         times = []
         if '*' == epr or epr == '':
+        #if '*' and '' means it is scheduled to run every (hour/minute/second) within the given time
             return [str(i) for i in range(min_stamp, max_stamp+1)]
         if ',' in epr:
+        #Seperate the step
             times = epr.split(',')
         else:
             times.append(epr)
         size = len(times)
         for i in range(0, size):
             time = str(times[i])
+            #For each step see if it has predefine range schedule to run in 
             if '-' in time:
                 times.remove(time)
                 i -= 1
                 incre = 1
                 if '/' in time:
+                #For the step designated interval 
                     range_time, incre = time.split('/')
                     start_time, end_time = map(int, range_time.split('-'))
                 else:
                     start_time, end_time = map(int, time.split('-'))
                 if start_time > end_time:
+                    #if it has reversed interval, seperate as two part to calculate the timestamp
+                    #e.g in <minutes> field 45-15 -> 0-15,45-59
                     times.extend([str(i) for i in range(start_time, max_stamp+1, int(incre))])
                     times.extend([str(i) for i in range(min_stamp, end_time+1, int(incre))])
                 else:
-                    for i in range(start_time, end_time+1, int(incre)):
-                        times.append(str(i))
-                
+                    times.extend([str(i) for i in range(start_time, end_time+1, int(incre))])
             elif '/' in time:
                 times.remove(time)
                 i -= 1
@@ -109,34 +114,13 @@ class ExpressionSchedular(object):
                 else:
                     start_time = int(start_time)
                 incre = int(incre)
-                times.extend([str(i) for i in range(start_time, max_stamp, incre)])
-                    #print(i)
+                times.extend([str(i)
+                             for i in range(start_time, max_stamp, incre)])
+                # print(i)
         times = [int(i) for i in times]
         times.sort()
-        return times      
+        return times
 
-    def get_schedule_timetable(self):
-        timetable = []
-        yr_of_next = self.get_next_year_or_month(self._expression_parts[6], self._qt.year)
-        month_of_next = self.get_next_year_or_month(self._expression_parts[4], self._qt.month)
-        print(yr_of_next)
-        print(month_of_next)
-        day_of_next = self.get_next_date(yr_of_next, month_of_next)
-        if yr_of_next == self._qt.year and month_of_next == self._qt.month and day_of_next == self._qt.day:
-            secondlist = self.get_time_list(self._expression_parts[0],0,59)
-            minutelist = self.get_time_list(self._expression_parts[1],0,59)
-            hourlist = self.get_time_list(self._expression_parts[2],0,23)
-            for hour in hourlist:
-                for minute in minutelist:
-                    print(time(int(hour), int(minute)))
-                    timetable.append(time(int(hour), int(minute)))
-                    #for second in secondlist:
-                        #print(time(int(hour), int(minute), int(second)))
-                       
-            return timetable
-        else:
-            return []
-        
     def get_nearest_weekday(self, yr_of_next, month_of_next, epr_date, firstd_of_month, lastd_of_month):
         """Returns the nearest weekday of the given epr_date. This is the helper method for using special symbol 'W' in DOM
 
@@ -175,6 +159,7 @@ class ExpressionSchedular(object):
 
     def get_next_year_or_month(self, epr, qt_ym):
         """Returns the year or month of next schedule timestamp trigger by the given expression
+
         Args:
             epr: the expression whether year or month
         Returns:
@@ -202,8 +187,7 @@ class ExpressionSchedular(object):
                     start_ym, end_ym = map(int, range_year.split('-'))
                 else:
                     start_ym, end_ym = map(int, ym.split('-'))
-                for i in range(start_ym, end_ym+1, int(incre)):
-                    yms.append(i)
+                yms.extend([i for i in range(start_ym, end_ym+1, int(incre))])                    
             elif '/' in ym:
                 yms.remove(ym)
                 start_ym, incre = map(int, ym.split('/'))
@@ -218,12 +202,14 @@ class ExpressionSchedular(object):
 
     def get_next_date(self, yr_of_next, month_of_next):
         """Returns the day of next schedule timestamp trigger by the given expression
+
         Args:
             yr_of_next: the year of next schedule
             month_of_next: the month of next schedule
         Returns:
             -1: no next schedule
             int: the value of day of next schedule
+
         """
         DOM = self._expression_parts[3]
         DOW = self._expression_parts[5]
@@ -244,9 +230,8 @@ class ExpressionSchedular(object):
                 next_date = self.get_next_year_or_month(DOM, self._qt.day)
 
         elif DOM == '*' and DOW != '*':
-            # Using DOW ,-*?/LC#
+            # Using Day-Of-Week
             if '#' in DOW:
-                # FIXME: havent dvelop yet
                 weekday, number = DOW.split('#')
                 if self._qt.weekday != int(weekday)-1:
                     next_date = -1
@@ -256,8 +241,6 @@ class ExpressionSchedular(object):
                 while calendar.weekday(yr_of_next, month_of_next, earliest_date) != int(weekday)-1:
                     earliest_date += 1
                 next_date = earliest_date
-
-                # monthcal = calendar.monthdatescalendar(yr_of_next,month_of_next)
             elif 'L' in DOW:
                 weekday = DOW.removesuffix('L')
                 next_date = lastd_of_month
@@ -267,17 +250,12 @@ class ExpressionSchedular(object):
                 # Get the next weekday in the schedule
                 next_weekday = self.get_next_year_or_month(
                     DOW, int(calendar.weekday(yr_of_next, month_of_next, self._qt.day))+1)
-              
+
                 next_date = self._qt.day
-
-                
                 while next_date <= lastd_of_month:
-
                     if calendar.weekday(yr_of_next, month_of_next, next_date) == int(next_weekday)-1:
-                        break;
+                        break
                     next_date += 1
-            
-
         else:
             next_date = self._qt.day
         return next_date
