@@ -4,23 +4,22 @@ import datetime
 from datetime import date
 
 descriptor = ExpressionDescriptor(
-    expression =  "0 23 ? * MON-FRI",
+    expression =  "*/5 15 * * THU",
     casing_type = CasingTypeEnum.Sentence,
     use_24hour_time_format = True
 )
-sched = ExpressionSchedular(expression = "0 23 ? * TUE-FRI", qt = datetime.date(2023,10,23))
+sched = ExpressionSchedular("2-59/3 1,9,22 11-26 1-10 ?", qt = datetime.date(2023,10,26))
 
 # GetDescription uses DescriptionTypeEnum.FULL by default:
-print(descriptor.get_description())
-print("{}".format(descriptor))
-print(sched.get_next_schedule_time())
+
+sched.get_schedule_timetable()
 # Or passing Options class as second argument:
 
-options = Options()
-options.casing_type = CasingTypeEnum.Sentence
-options.use_24hour_time_format = True
-descriptor = ExpressionDescriptor("0 23 ? * MON-FRI", options)
-#parser = ExpressionParser("*/10 * * * *", options)
+# options = Options()
+# options.casing_type = CasingTypeEnum.Sentence
+# options.use_24hour_time_format = True
+# descriptor = ExpressionDescriptor("0 23 ? * MON-FRI", options)
+# #parser = ExpressionParser("*/10 * * * *", options)
 print(descriptor.get_description(DescriptionTypeEnum.FULL))
 
 
