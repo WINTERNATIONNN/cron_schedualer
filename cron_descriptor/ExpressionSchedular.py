@@ -56,7 +56,7 @@ class ExpressionSchedular(object):
             hourlist = self.get_time_list(self._expression_parts[2], 0, 23)
             for hour in hourlist:
                 for minute in minutelist:
-                    print(time(int(hour), int(minute)))
+                    #print(time(int(hour), int(minute)))
                     timetable.append(time(int(hour), int(minute)))
                     # for second in secondlist:
                     # print(time(int(hour), int(minute), int(second)))
