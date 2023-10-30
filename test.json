@@ -1,44 +1,95 @@
 {
-  "iflow_list": [
+  "SAP_PASSPORT_PoC": [
     {
-      "iflow": 173920,
-      "cron": "0 0 0/1 * * ?"
-    },
-    {
-      "iflow": 284730,
-      "cron": "0 23 ? * MON-FRI"
-    },
-    {
-      "iflow": 293749,
-      "cron": "0 0/10 * * * ?"
-    },
-    {
-      "iflow": 375890,
-      "cron": "30 11 * * 1-5"
-    },
-    {
-      "iflow": 379947,
-      "cron": "30 14,16 * * *"
-    },
-    {
-      "iflow": 402909,
-      "cron": "*/5 15 * * MON-FRI"
-    },
-    {
-      "iflow": 429098,
-      "cron": "30 02 14 * * *"
-    },
-    {
-      "iflow": 444000,
-      "cron": "5-10 30-35 10-12 * * *"
-    },
-    {
-      "iflow": 805843,
-      "cron": "0 0/1 * * * ?"
-    },
-    {
-      "iflow": 903749,
-      "cron": "*/45 * * * * *"
+      "description": "one time execution during deployment",
+      "value": "fireNow=true"
     }
-  ]
+  ],
+  "SimpleTest": [
+    {
+      "description": "one time execution during deployment",
+      "value": "fireNow=true"
+    }
+  ],
+  "TIMERTEST": [
+    {
+      "description": "At 02:52 AM, on day 5 of the month, only in June, only in 2023",
+      "timezone": "Etc/GMT",
+      "value": "0 52 2 5 6? 2023"
+    }
+  ],
+  "TIMERTEST_copy": [
+    {
+      "description": "Every second, between 12:00 AM and 12:59 AM, on day 1 of the month",
+      "timezone": "Etc/GMT",
+      "value": "0/1 * 0-0 1 * ? *"
+    }
+  ],
+  "DataLoad": [
+    {
+      "description": "one time execution during deployment",
+      "value": "fireNow=true"
+    }
+  ],
+  "test": [
+    {
+      "description": "one time execution during deployment",
+      "value": "fireNow=true"
+    }
+  ],
+  "self_test0": [
+    {
+      "value": "0 0 0/1 * * ?"
+    }
+  ],
+  "self_test1": [
+    {
+      "value": "0 23 ? * MON-FRI"
+    }
+  ],
+  "self_test2": [
+    {
+      "value": "0 0/10 * * * ?"
+    }
+  ],
+  "self_test3": [
+    {
+      "value": "30 11 * * 1-5"
+    }
+  ],
+  "self_test4": [
+    {
+      "value": "30 14,16 * * *"
+    }
+  ],
+  "self_test5": [
+    {
+      "value": "*/5 15 * * MON-FRI"
+    }
+  ],
+  "self_test6": [
+    {
+      "value": "30 02 14 * * *"
+    }
+  ],
+  "self_test7": [
+    {
+      "value": "5-10 30-35 10-12 * * *"
+    }
+  ],
+  "self_test8": [
+    {
+      "value": "0 0/1 * * * ?"
+    }
+  ],
+  "self_test9": [
+    {
+      "value": "*/45 * * * * *"
+    }
+  ],
+  "self_test10": [
+   {
+     "value": "0 0/1 * * * MON"
+   }
+ ]
 }

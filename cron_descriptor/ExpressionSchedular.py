@@ -215,8 +215,9 @@ class ExpressionSchedular(object):
         DOW = self._expression_parts[5]
         epr_month = self._expression_parts[4]
         next_date = -1
-        firstd_of_month, lastd_of_month = calendar.monthrange(
-            yr_of_next, month_of_next)
+        firstd_of_month = 1
+        _, lastd_of_month = calendar.monthrange(
+            int(yr_of_next), int(month_of_next))
         if DOW == '*' and DOM != '*':
             # Using DOM ,-*?/ W L
             # firstd_of_month, lastd_of_month = calendar.monthrange(yr_of_next, month_of_next)

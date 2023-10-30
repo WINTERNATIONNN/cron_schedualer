@@ -4,7 +4,7 @@ import datetime
 from datetime import date
 import json
 
-EXPRESSION = "*/5 15 * * THU"
+EXPRESSION = "0 0/1 * * * MON" #"0 23 ? * MON-FRI"
 descriptor = ExpressionDescriptor(
     expression = EXPRESSION,
     casing_type = CasingTypeEnum.Sentence,
