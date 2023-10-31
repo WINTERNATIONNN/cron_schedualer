@@ -75,7 +75,7 @@ def visualize_by_day(iflow_hourly_fequency):
     plt.show()
 
 
-def visualize_by_hour(iflow_list,iflow_ids):
+def visualize_by_hour(iflow_list,iflow_ids,cur_hour):
     # Declaring a figure "gnt"
     fig, gnt = plt.subplots(figsize=(8, 3))
 
@@ -98,7 +98,7 @@ def visualize_by_hour(iflow_list,iflow_ids):
 
     # Setting graph attribute
     gnt.grid(True)
-    cur_hour = 5
+ 
     LENGTH_PER_JOB = 0.2
     # Declaring a bar in schedule
     index = 0
@@ -112,7 +112,6 @@ def visualize_by_hour(iflow_list,iflow_ids):
             if stamp.hour == cur_hour:
                 cur_hour_list.append(
                     (float(stamp.minute + stamp.second/60), float(LENGTH_PER_JOB)))
-        # print(cur_hour_list)
         gnt.broken_barh(cur_hour_list, ((index+1)*10, 9),
                         facecolors=('tab:red'))
         index += 1
@@ -166,40 +165,44 @@ def get_iflow_by_hour(iflow_list,qt):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--visualize_type', type=str, default=None)
+    parser.add_argument('--visualize_type', choices=["hour","month","day"], default=None,required=True)
     parser.add_argument('--filename', type=str, default=None)
-    parser.add_argument('--year', type=int, default=None) #YYYY-MM-DD
-    parser.add_argument('--month', type=int, default=None) #YYYY-MM-DD
-    parser.add_argument('--day', type=int, default=None) #YYYY-MM-DD
-    parser.add_argument('--hour', type=int, default=None) #YYYY-MM-DD
+    parser.add_argument('--year', type=int, default=None, help ='If None, default set to current year') #YYYY-MM-DD
+    parser.add_argument('--month', type=int, default=None, help ='If None, default set to current year') #YYYY-MM-DD
+    parser.add_argument('--day', type=int, default=None, help ='If None, default set to current year') #YYYY-MM-DD
+    parser.add_argument('--hour', type=int, default=None, help ='If None, default set to current year') #YYYY-MM-DD
 
     args = parser.parse_args()
+    
     qt = datetime.datetime.now()
     if args.year is not None:
-        qt.replace(year = args.year)
+        qt = qt.replace(year = args.year)
     if args.month is not None:
-        qt.replace(month = args.month)
+        qt = qt.replace(month = args.month)
     if args.day is not None:
-        qt.replace(day = args.day)
+        qt = qt.replace(day = args.day)
     if args.hour is not None:
-        qt.replace(hour = args.hour)
+        qt = qt.replace(hour = args.hour)
+        print(qt.hour)
         
     
     _, LAST_DAY_OF_MONTH = calendar.monthrange(qt.year, qt.month)
     iflow_list = []
 
-
-    visualize_type= 'day'
-    qt.replace(day = 2)
+    # visualize_type= 'day'
+    # qt.replace(day = 2)
+    
+    visualize_type = args.visualize_type
   
     with open(FILE_PATH, "r") as file:
         iflow_list = json.load(file)
 
     if visualize_type == 'month':
+        
         visualize_by_month(LAST_DAY_OF_MONTH, get_iflow_by_month(LAST_DAY_OF_MONTH, iflow_list,qt),qt)
     elif visualize_type == 'day':
         visualize_by_day(get_iflow_hourly_fequency(iflow_list,qt))
     elif visualize_type == 'hour':
-        visualize_by_hour(iflow_list,get_iflow_by_hour(iflow_list,qt)[qt.hour])
+        visualize_by_hour(iflow_list,get_iflow_by_hour(iflow_list,qt)[qt.hour],qt.hour)
     
 
