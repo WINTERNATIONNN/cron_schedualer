@@ -12,6 +12,7 @@ import numpy as np
 
 TOTAL_HOURS_PER_DAY = 24
 FILE_PATH = 'test.json'
+OUTPUT_PATH =''
 
 
 def visualize_by_month(TOTAL_DAYS_PER_MONTH, iflow_by_month, qt):
@@ -41,7 +42,7 @@ def visualize_by_month(TOTAL_DAYS_PER_MONTH, iflow_by_month, qt):
                for i in range(1, TOTAL_DAYS_PER_MONTH+1)]
     ax.set(xlim=(0, TOTAL_DAYS_PER_MONTH+1), ylim=(0, ((N.max()/10) + 3) * 10))
     ax.set_xticks(xticks, labels=xlabels, fontsize=5)
-
+    plt.savefig(os.path.join(OUTPUT_PATH,'figure_by_month.png'))
     plt.show()
 
 
@@ -73,7 +74,7 @@ def visualize_by_day(iflow_hourly_fequency):
                for i in range(0, TOTAL_HOURS_PER_DAY)]
     ax.set(xlim=(0, TOTAL_HOURS_PER_DAY), ylim=(0, ((N.max()/10) + 3) * 10))
     ax.set_xticks(xticks, labels=xlabels,fontsize=10)
-
+    plt.savefig(os.path.join(OUTPUT_PATH,'figure_by_day.png'))
     plt.show()
 
 
@@ -121,7 +122,8 @@ def visualize_by_hour(iflow_list,iflow_ids,cur_hour):
                         facecolors=('tab:red'))
         index += 1
 
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_PATH,'figure_by_hour.png'))
+    #plt.show()
 
 def get_iflow_by_month(LAST_DAY_OF_MONTH, iflow_list,qt):
 
