@@ -1,4 +1,6 @@
 from datetime import time, datetime, date
+import os
+import sys
 from matplotlib import colors
 from cron_descriptor import ExpressionSchedular
 import datetime
@@ -70,17 +72,19 @@ def visualize_by_day(iflow_hourly_fequency):
     xlabels = [time(i, 0).strftime("%H:%M")
                for i in range(0, TOTAL_HOURS_PER_DAY)]
     ax.set(xlim=(0, TOTAL_HOURS_PER_DAY), ylim=(0, ((N.max()/10) + 3) * 10))
-    ax.set_xticks(xticks, labels=xlabels,fontsize=8)
+    ax.set_xticks(xticks, labels=xlabels,fontsize=10)
 
     plt.show()
 
 
 def visualize_by_hour(iflow_list,iflow_ids,cur_hour):
     # Declaring a figure "gnt"
-    fig, gnt = plt.subplots(figsize=(8, 3))
+    fig, gnt = plt.subplots(figsize = (12,len(iflow_ids)))
 
     # Setting ticks on y-axis
+    x_ticks = np.arange(0, 60,5)
     y_ticks = [int(i*10+15) for i in range(0, len(iflow_ids))]
+    xlabels = [time(cur_hour,i, 0).strftime("%M:%S") for i in range(0, 60,5)]
 
     # Setting Y-axis limits
     gnt.set_ylim(0, len(iflow_ids)*10+15)
@@ -89,10 +93,11 @@ def visualize_by_hour(iflow_list,iflow_ids,cur_hour):
     gnt.set_xlim(0, 60)
 
     # Setting labels for x-axis and y-axis
-    gnt.set_xlabel('Time Stamp')
+    gnt.set_xlabel('Time')
     gnt.set_ylabel('iFlow')
 
     gnt.set_yticks(y_ticks)
+    gnt.set_xticks(x_ticks,labels=xlabels,fontsize=8)
     # Labelling tickes of y-axis
     gnt.set_yticklabels(iflow_ids)
 
@@ -142,10 +147,7 @@ def get_iflow_hourly_fequency(iflow_list,qt):
             iflow_list[iflow_id][0]["timestamps"] = sched.get_schedule_timetable()
             for stamp in iflow_list[iflow_id][0]["timestamps"]:
                 iflow_hourly_fequency.append(stamp.hour)
-                # if iflow_by_hour[stamp.hour] is None:
-                #     iflow_by_hour[stamp.hour] = []
-                # if iflow_by_hour[stamp.hour].count(iflow_id) == 0:
-                #     iflow_by_hour[stamp.hour].append(iflow_id)
+
     return iflow_hourly_fequency
 
 def get_iflow_by_hour(iflow_list,qt):
@@ -166,14 +168,22 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--visualize_type', choices=["hour","month","day"], default=None,required=True)
-    parser.add_argument('--filename', type=str, default=None)
+    parser.add_argument('--input_file_path', type=str, default=None)
+    parser.add_argument('--output_file_path', type=str, default=".")
     parser.add_argument('--year', type=int, default=None, help ='If None, default set to current year') #YYYY-MM-DD
     parser.add_argument('--month', type=int, default=None, help ='If None, default set to current year') #YYYY-MM-DD
     parser.add_argument('--day', type=int, default=None, help ='If None, default set to current year') #YYYY-MM-DD
     parser.add_argument('--hour', type=int, default=None, help ='If None, default set to current year') #YYYY-MM-DD
 
     args = parser.parse_args()
-    
+    if not os.path.exists(args.input_file_path):
+        print("Input file path does not exist. Please provide a valid file path.")
+        sys.exit()
+    if not os.path.exists(args.output_file_path):
+        print("Output file path does not exist. Please provide a valid file path.")
+        sys.exit()
+
+    FILE_PATH = args.input_file_path
     qt = datetime.datetime.now()
     if args.year is not None:
         qt = qt.replace(year = args.year)
@@ -183,14 +193,11 @@ if __name__ == '__main__':
         qt = qt.replace(day = args.day)
     if args.hour is not None:
         qt = qt.replace(hour = args.hour)
-        print(qt.hour)
+    
         
     
     _, LAST_DAY_OF_MONTH = calendar.monthrange(qt.year, qt.month)
     iflow_list = []
-
-    # visualize_type= 'day'
-    # qt.replace(day = 2)
     
     visualize_type = args.visualize_type
   
