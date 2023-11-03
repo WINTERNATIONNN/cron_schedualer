@@ -9,7 +9,10 @@ import calendar
 import argparse
 import matplotlib.pyplot as plt
 import numpy as np
-
+import plotly.express as px
+import pandas as pd
+import plotly.graph_objects as go
+from colormap import rgb2hex
 TOTAL_HOURS_PER_DAY = 24
 FILE_PATH = 'test.json'
 OUTPUT_PATH =''
@@ -77,6 +80,49 @@ def visualize_by_day(iflow_hourly_fequency):
     plt.savefig(os.path.join(OUTPUT_PATH,'figure_by_day.png'))
     plt.show()
 
+def visualize_by_day_new(iflow_hourly_fequency):
+
+    # iflow_hourly_max = ((max(iflow_hourly_fequency)/10) + 1) * 10
+
+    fig, ax = plt.subplots(figsize=(12, 3), tight_layout=True)
+    # N is the count in each bin, bins is the lower-limit of the bin
+    N, bins, patches = ax.hist(
+        iflow_hourly_fequency, bins=range(TOTAL_HOURS_PER_DAY+1), edgecolor="white")
+
+    # We'll color code by height, but you could use any scalar
+    fracs = N / N.max()
+
+    # we need to normalize the data to 0..1 for the full range of the colormap
+    norm = colors.Normalize(fracs.min(), fracs.max())
+
+    # # Now, we'll loop through our objects and set the color of each accordingly
+    colormap = []
+    for thisfrac, thispatch in zip(fracs, patches):
+        color = plt.cm.viridis(norm(thisfrac))
+        thispatch.set_facecolor(color)
+        colormap.append(rgb2hex(color[0], color[1], color[2], color[3]))
+      
+    plt.ylabel('number of iflow')
+    plt.xlabel('time')
+
+    xticks = np.arange(0, TOTAL_HOURS_PER_DAY)
+    xlabels = [time(i, 0).strftime("%H:%M")
+               for i in range(0, TOTAL_HOURS_PER_DAY)]
+
+    fig = go.Figure(data=[go.Histogram(x=iflow_hourly_fequency,
+                                    xbins=dict(start=0,end=24),
+                                    histfunc="count",
+                                    marker={'color': colormap})])
+   # fig.show()
+    fig.update_layout(bargap=0.2,
+                    xaxis = dict(
+                        tickmode = 'array',
+                        tickvals = xticks,
+                        ticktext = xlabels
+                    )
+    )
+
+    fig.show()
 
 def visualize_by_hour(iflow_list,iflow_ids,cur_hour):
     # Declaring a figure "gnt"
@@ -141,16 +187,20 @@ def get_iflow_by_month(LAST_DAY_OF_MONTH, iflow_list,qt):
 
 def get_iflow_hourly_fequency(iflow_list,qt):
     # iflow_by_month = [0]*(1+LAST_DAY_OF_MONTH)
-    iflow_hourly_fequency = []
+    
+    id_list = []
+    time_list = []
     for iflow_id in iflow_list:
         expre = iflow_list[iflow_id][0]["value"]
         if expre != "fireNow=true":
             sched = ExpressionSchedular(expre, qt)
             iflow_list[iflow_id][0]["timestamps"] = sched.get_schedule_timetable()
             for stamp in iflow_list[iflow_id][0]["timestamps"]:
-                iflow_hourly_fequency.append(stamp.hour)
+                id_list.append(iflow_id)
+                time_list.append(stamp.hour+float(stamp.minute/60))
+    iflow_hourly_fequency = pd.DataFrame({"iflow_id":id_list,"time":time_list})
 
-    return iflow_hourly_fequency
+    return time_list
 
 def get_iflow_by_hour(iflow_list,qt):
     iflow_by_hour = dict.fromkeys(list(range(TOTAL_HOURS_PER_DAY)))
@@ -210,7 +260,8 @@ if __name__ == '__main__':
         
         visualize_by_month(LAST_DAY_OF_MONTH, get_iflow_by_month(LAST_DAY_OF_MONTH, iflow_list,qt),qt)
     elif visualize_type == 'day':
-        visualize_by_day(get_iflow_hourly_fequency(iflow_list,qt))
+        visualize_by_day_new(get_iflow_hourly_fequency(iflow_list,qt))
+        #visualize_by_day(get_iflow_hourly_fequency(iflow_list,qt))
     elif visualize_type == 'hour':
         visualize_by_hour(iflow_list,get_iflow_by_hour(iflow_list,qt)[qt.hour],qt.hour)
     
