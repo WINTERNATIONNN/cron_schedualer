@@ -14,6 +14,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from colormap import rgb2hex
 TOTAL_HOURS_PER_DAY = 24
+TOTAL_MINUTES_PER_HOUR =60
 FILE_PATH = 'test.json'
 OUTPUT_PATH =''
 
@@ -121,7 +122,58 @@ def visualize_by_day_new(iflow_hourly_fequency):
                         ticktext = xlabels
                     )
     )
+    fig.show()
 
+def get_color_map(freq,gap):
+    fig, ax = plt.subplots(figsize=(12, 3), tight_layout=True)
+ 
+    N, bins, patches = ax.hist(freq, bins=np.arange(0, TOTAL_MINUTES_PER_HOUR + gap, gap), edgecolor="white")
+    fracs = N / N.max()
+    norm = colors.Normalize(fracs.min(), fracs.max())
+    print(N)
+    print((fracs.min(), fracs.max()))
+    colormap = []
+    for thisfrac, thispatch in zip(fracs, patches):
+        color = plt.cm.viridis(norm(thisfrac))
+        colormap.append(rgb2hex(color[0], color[1], color[2], color[3]))
+    return colormap
+
+def visualize_by_hour_new(iflow_list,iflow_ids,cur_hour):
+    TIME_GAP = 5
+    cur_hour_list= [[]]*TOTAL_MINUTES_PER_HOUR
+    iflow_min_freq = []
+
+    for iflow_id in iflow_ids:
+ 
+        if len(iflow_list[iflow_id][0]["timestamps"]) == 0:
+            continue
+        for stamp in iflow_list[iflow_id][0]["timestamps"]:
+            # print(iflow_timestamp)
+            if stamp.hour == cur_hour:
+                cur_hour_list[stamp.minute].append(iflow_id)
+                iflow_min_freq.append(stamp.minute)
+
+      
+    plt.ylabel('number of iflow')
+    plt.xlabel('time')
+
+    xticks = np.arange(0, TOTAL_MINUTES_PER_HOUR)
+    xlabels = [time(cur_hour,i, 0).strftime("%M:%S")
+               for i in range(0, TOTAL_MINUTES_PER_HOUR)]
+
+    fig = go.Figure(data=[go.Histogram(x=iflow_min_freq,
+                                    xbins=dict(start=0,end=TOTAL_MINUTES_PER_HOUR),
+                                    nbinsx=int(TOTAL_MINUTES_PER_HOUR/TIME_GAP),                                   
+                                    histfunc="count",
+                                    marker={'color': get_color_map(iflow_min_freq,TIME_GAP)})])
+   # fig.show()
+    fig.update_layout(bargap=0.2,
+                    xaxis = dict(
+                        tickmode = 'array',
+                        tickvals = xticks,
+                        ticktext = xlabels,
+                    )
+    )
     fig.show()
 
 def visualize_by_hour(iflow_list,iflow_ids,cur_hour):
@@ -263,6 +315,7 @@ if __name__ == '__main__':
         visualize_by_day_new(get_iflow_hourly_fequency(iflow_list,qt))
         #visualize_by_day(get_iflow_hourly_fequency(iflow_list,qt))
     elif visualize_type == 'hour':
-        visualize_by_hour(iflow_list,get_iflow_by_hour(iflow_list,qt)[qt.hour],qt.hour)
+        visualize_by_hour_new(iflow_list,get_iflow_by_hour(iflow_list,qt)[qt.hour],qt.hour)
+        #visualize_by_hour(iflow_list,get_iflow_by_hour(iflow_list,qt)[qt.hour],qt.hour)
     
 
