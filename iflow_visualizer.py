@@ -57,7 +57,10 @@ def visualize_by_day(iflow_hourly_fequency):
 
     fig, ax = plt.subplots(figsize=(12, 3), tight_layout=True)
     fig.canvas.mpl_connect('pick_event', onpick)
-    # N is the count in each bin, bins is the lower-limit of the bin
+    timer = fig.canvas.new_timer(interval=100)
+    timer.start()
+    # N is the count in each bin, bins is the l
+    # lower-limit of the bin
     N, bins, patches = ax.hist(
         iflow_hourly_fequency, bins=range(TOTAL_HOURS_PER_DAY+1), edgecolor="white",picker=True)
 
@@ -83,48 +86,6 @@ def visualize_by_day(iflow_hourly_fequency):
     plt.savefig(os.path.join(OUTPUT_PATH,'figure_by_day.png'))
     plt.show()
 
-# def visualize_by_day_new(iflow_hourly_fequency):
-
-#     # iflow_hourly_max = ((max(iflow_hourly_fequency)/10) + 1) * 10
-
-#     fig, ax = plt.subplots(figsize=(12, 3), tight_layout=True)
-#     # N is the count in each bin, bins is the lower-limit of the bin
-#     N, bins, patches = ax.hist(
-#         iflow_hourly_fequency, bins=range(TOTAL_HOURS_PER_DAY+1), edgecolor="white")
-
-#     # We'll color code by height, but you could use any scalar
-#     fracs = N / N.max()
-
-#     # we need to normalize the data to 0..1 for the full range of the colormap
-#     norm = colors.Normalize(fracs.min(), fracs.max())
-
-#     # # Now, we'll loop through our objects and set the color of each accordingly
-#     colormap = []
-#     for thisfrac, thispatch in zip(fracs, patches):
-#         color = plt.cm.viridis(norm(thisfrac))
-#         thispatch.set_facecolor(color)
-#         colormap.append(rgb2hex(color[0], color[1], color[2], color[3]))
-      
-#     plt.ylabel('number of iflow')
-#     plt.xlabel('time')
-
-#     xticks = np.arange(0, TOTAL_HOURS_PER_DAY)
-#     xlabels = [time(i, 0).strftime("%H:%M")
-#                for i in range(0, TOTAL_HOURS_PER_DAY)]
-
-#     fig = go.Figure(data=[go.Histogram(x=iflow_hourly_fequency,
-#                                     xbins=dict(start=0,end=24),
-#                                     histfunc="count",
-#                                     marker={'color': colormap})])
-#    # fig.show()
-#     fig.update_layout(bargap=0.2,
-#                     xaxis = dict(
-#                         tickmode = 'array',
-#                         tickvals = xticks,
-#                         ticktext = xlabels
-#                     )
-#     )
-#     fig.show()
 
 def get_color_map(freq,gap):
     fig, ax = plt.subplots(figsize=(12, 3), tight_layout=True)
@@ -218,7 +179,7 @@ def visualize_by_hour(iflow_list,iflow_ids,cur_hour):
     #print(idlist)
     iflow_hourly_max = ((max(iflow_min_freq)/10) + 1) * 10
 
-    fig, ax = plt.subplots(figsize=(15, 3), tight_layout=True)
+    fig, ax = plt.subplots(figsize=(15, 5), tight_layout=True)
     fig.canvas.mpl_connect('pick_event', onpick)
     # N is the count in each bin, bins is the lower-limit of the bin
     N, bins, patches = ax.hist(
@@ -310,7 +271,12 @@ def onpick(event):
                     df.loc[len(df.index)] = [id,cur_hour_list[i].count(id)]
                 idcount = [cur_hour_list[i].count(j) for j in idlist]
     print(df)
-    plt.table(cellText=df.values, colLabels=df.columns, loc='bottom')
+    ax = plt.gca()
+    for txt in ax.texts:
+        txt.set_visible(False)
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    ax.text(0.05, 0.95, df, transform=ax.transAxes, fontsize=14,
+        verticalalignment='top', bbox=props)
     plt.show()
 
 
@@ -344,7 +310,7 @@ if __name__ == '__main__':
     if args.hour is not None:
         qt = qt.replace(hour = args.hour)
     
-        
+
     
     _, LAST_DAY_OF_MONTH = calendar.monthrange(qt.year, qt.month)
     iflow_list = []
