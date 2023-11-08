@@ -52,13 +52,19 @@ class ExpressionSchedular(object):
         day_of_next = self.get_next_date(yr_of_next, month_of_next)
         if yr_of_next == self._qt.year and month_of_next == self._qt.month and day_of_next == self._qt.day:
             secondlist = self.get_time_list(self._expression_parts[0], 0, 59)
+            if self._expression_parts[0] =='':
+                secondlist = []
+            
             minutelist = self.get_time_list(self._expression_parts[1], 0, 59)
             hourlist = self.get_time_list(self._expression_parts[2], 0, 23)
             for hour in hourlist:
                 for minute in minutelist:
                     #print(time(int(hour), int(minute)))
-                    timetable.append(time(int(hour), int(minute)))
-                    # for second in secondlist:
+                    if len(secondlist) == 0 :
+
+                        timetable.append(time(int(hour), int(minute),0))
+                    for second in secondlist:
+                        timetable.append(time(int(hour), int(minute),int(second)))
                     # print(time(int(hour), int(minute), int(second)))
 
             return timetable
@@ -76,6 +82,7 @@ class ExpressionSchedular(object):
 
         """
         times = []
+        
         if '*' == epr or epr == '':
         #if '*' and '' means it is scheduled to run every (hour/minute/second) within the given time
             return [str(i) for i in range(min_stamp, max_stamp+1)]

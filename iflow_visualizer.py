@@ -7,11 +7,9 @@ import datetime
 import json
 import calendar
 import argparse
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt,mpld3
 import numpy as np
-import plotly.express as px
 import pandas as pd
-import plotly.graph_objects as go
 from colormap import rgb2hex
 TOTAL_HOURS_PER_DAY = 24
 TOTAL_MINUTES_PER_HOUR =60
@@ -57,8 +55,7 @@ def visualize_by_day(iflow_hourly_fequency):
 
     fig, ax = plt.subplots(figsize=(12, 3), tight_layout=True)
     fig.canvas.mpl_connect('pick_event', onpick)
-    timer = fig.canvas.new_timer(interval=100)
-    timer.start()
+    
     # N is the count in each bin, bins is the l
     # lower-limit of the bin
     N, bins, patches = ax.hist(
@@ -100,57 +97,6 @@ def get_color_map(freq,gap):
         colormap.append(rgb2hex(color[0], color[1], color[2], color[3]))
     return colormap
 
-# def visualize_by_hour_new(iflow_list,iflow_ids,cur_hour):
-#     TIME_GAP = 1
-#     cur_hour_list= [None]*TOTAL_MINUTES_PER_HOUR
-#     iflow_min_freq = []
-#     idlist = [None]*TOTAL_MINUTES_PER_HOUR
-#     print(iflow_ids)
-#     for iflow_id in iflow_ids:
-        
-#         if len(iflow_list[iflow_id][0]["timestamps"]) == 0:
-#             continue
-#         for stamp in iflow_list[iflow_id][0]["timestamps"]:
-#             #print(iflow_id +": "+str(stamp.minute))
-#             if stamp.hour == cur_hour:
-#                 if cur_hour_list[stamp.minute] ==None:
-#                     cur_hour_list[stamp.minute]= [iflow_id]
-#                 else:
-#                     cur_hour_list[stamp.minute].append(iflow_id)
-#                 iflow_min_freq.append(stamp.minute)
-
-#     for i in range(0,60):
-#         for iflow_id in iflow_ids:
-#             cur = cur_hour_list[i].count(iflow_id)
-#             if(cur != 0):
-#                 if idlist[i] == None:
-#                     idlist[i] = [iflow_id + ": " + str(cur)]
-#                 else:
-#                     idlist[i].append(iflow_id + ": " + str(cur))
-   
-#     plt.ylabel('number of iflow')
-#     plt.xlabel('time')
-
-#     xticks = np.arange(0, TOTAL_MINUTES_PER_HOUR)
-#     xlabels = [time(cur_hour,i, 0).strftime("%M:%S")
-#                for i in range(0, TOTAL_MINUTES_PER_HOUR)]
-
-#     fig = go.Figure(data=[go.Histogram(x=iflow_min_freq,
-#                                     xbins=dict(start=0,end=TOTAL_MINUTES_PER_HOUR),
-#                                     nbinsx=int(TOTAL_MINUTES_PER_HOUR/TIME_GAP),                                   
-#                                     histfunc="count",customdata = idlist,                                  
-#                                     marker={'color': get_color_map(iflow_min_freq,TIME_GAP)})])
-#    # fig.show()
-#     fig.update_traces(hovertemplate='On %{x} have %{customdata}')
-#     fig.update_layout(bargap=0.2,
-#                     xaxis = dict(
-#                         tickmode = 'array',
-#                         tickvals = xticks,
-#                         ticktext = xlabels,
-#                     )
-#     )
-#     fig.show()
-
 def visualize_by_hour(iflow_list,iflow_ids,cur_hour):
     # def visualize_by_hour_new(iflow_list,iflow_ids,cur_hour):
     TIME_GAP = 1
@@ -172,11 +118,7 @@ def visualize_by_hour(iflow_list,iflow_ids,cur_hour):
     for i in range(0,60):
         for iflow_id in iflow_ids:
             cur = cur_hour_list[i].count(iflow_id)
-           
-                
-            
-
-    #print(idlist)
+ 
     iflow_hourly_max = ((max(iflow_min_freq)/10) + 1) * 10
 
     fig, ax = plt.subplots(figsize=(15, 5), tight_layout=True)
@@ -206,7 +148,7 @@ def visualize_by_hour(iflow_list,iflow_ids,cur_hour):
     ax.set_xticks(xticks, labels=xlabels,fontsize=5,rotation = 90)
     plt.savefig(os.path.join(OUTPUT_PATH,'figure_by_hour.png'))
     plt.show()
-
+    
 
 def get_iflow_by_month(LAST_DAY_OF_MONTH, iflow_list,qt):
 
@@ -257,8 +199,6 @@ def onpick(event):
     bar = event.artist
     left = int(bar.get_x())
     right = int(left + bar.get_width())
-    print(left)
-    print(right)
     idlist = []
     df = pd.DataFrame({"id":[],"count":[]})
     for i in range(left,right):
@@ -324,7 +264,7 @@ if __name__ == '__main__':
         
         visualize_by_month(LAST_DAY_OF_MONTH, get_iflow_by_month(LAST_DAY_OF_MONTH, iflow_list,qt),qt)
     elif visualize_type == 'day':
-        #visualize_by_day_new(get_iflow_hourly_fequency(iflow_list,qt))
+
         visualize_by_day(get_iflow_hourly_fequency(iflow_list,qt))
     elif visualize_type == 'hour':
         #visualize_by_hour_new(iflow_list,get_iflow_by_hour(iflow_list,qt)[qt.hour],qt.hour)
