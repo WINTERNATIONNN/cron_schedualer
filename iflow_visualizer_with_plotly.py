@@ -201,9 +201,7 @@ def get_iflow_hourly_fequency(iflow_list, qt):
             for stamp in iflow_list[iflow_id][0]["timestamps"]:
                 id_list.append(iflow_id)
                 time_list.append(stamp.hour+float(stamp.minute/60))
-    iflow_hourly_fequency = pd.DataFrame(
-        {"iflow_id": id_list, "time": time_list})
-
+    
     return time_list
 
 
