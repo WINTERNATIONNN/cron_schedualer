@@ -1,16 +1,15 @@
 import calendar
 from io import StringIO
 import json
-from dash import Dash, html, dcc, Input, Output, callback, no_update, dash_table  # type: ignore
+import os
+import cpi_scheduler_dump
+from dash import Dash, html, dcc, Input, Output, ctx,callback, no_update, dash_table  # type: ignore
 from datetime import time, datetime, date  # type: ignore
 import datetime # type: ignore
-import os
-import sys
 from matplotlib import colors
 from cron_descriptor import ExpressionSchedular
 import json
 import calendar
-import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px  # type: ignore
@@ -19,13 +18,15 @@ import plotly.graph_objects as go  # type: ignore
 from colormap import rgb2hex  # type: ignore
 
 
+
 TOTAL_HOURS_PER_DAY = 24
 TOTAL_MINUTES_PER_HOUR = 60
-FILE_PATH = 'test.json'
+FILE_PATH = ''
 OUTPUT_PATH = ''
 idlist = [None]*TOTAL_MINUTES_PER_HOUR
 date_object = date.today()
 hour_df = []
+cur_hour = 0
 
 def visualize_by_month(TOTAL_DAYS_PER_MONTH, iflow_daily_frequency, qt):
     """Returns the fig of iflow counts distribution throughout the month
@@ -111,6 +112,7 @@ def visualize_by_hour(iflow_min_freq, iflow_ids, cur_hour):
                for i in range(0, TOTAL_MINUTES_PER_HOUR, TIME_GAP)]
 
     #hour_df stores the iflow ids and counts within each time gap  (aka.bins)
+    #print(get_stamplist(iflow_ids,cur_hour))
     hour_df = [get_idlist(i, i + TIME_GAP, iflow_ids)
                for i in range(0, TOTAL_MINUTES_PER_HOUR, TIME_GAP)]
 
@@ -225,6 +227,22 @@ def get_iflow_freq(iflow_list, qt, TYPE, query_range):
 
     return cur_list
 
+def get_stamplist(iflow_ids, query_range, query_date):
+    #stamplist = dict()
+    cur_df = pd.DataFrame({"id": [], "count": [], "description":[], "timestamp": []})
+    temp_df = get_idlist(0,60,iflow_ids)
+    for iflow_id in temp_df["id"].values:
+        cur_list = []
+        for stamp in iflow_list[iflow_id][0]["timestamps"]:
+            if stamp.hour == query_range:
+                cur_list.append(stamp.strftime("%H:%M:%S"))
+        cur_df.loc[len(cur_df.index)] =[iflow_id, len(cur_list),iflow_list[iflow_id][0]["description"], ','.join(cur_list)]
+        #cur_df.loc[len(cur_df.index)] =[iflow_id, len(cur_list),"tt", ','.join(cur_list)]
+    #print(cur_df)
+    FILE_NAME = query_date.strftime("%Y-%m-%d")+'_' + str(query_range) + '.csv'
+    cur_df.to_csv(OUTPUT_PATH+ FILE_NAME, index = False)
+    
+
 
 @callback(
     Output('iflow_by_month', 'figure'),
@@ -262,6 +280,7 @@ def display_day(clickData):
     Input('iflow_by_day', 'clickData'))
 def display_hour(clickData):
     global date_object
+    global cur_hour
     if clickData is None:
         return no_update
     cur_hour = 0
@@ -281,11 +300,27 @@ def update_table(clickData):
     bin = clickData['points'][0]['binNumber']
     return hour_df[bin].to_dict('records')
 
+@callback(
+    Output('container-button-timestamp', 'children'),
+    Input('btn-nclicks-1', 'n_clicks')
+)
+def byclicks(btn1):
+    global cur_hour
+    global date_object
+    msg = ''
+    if "btn-nclicks-1" == ctx.triggered_id:
+        get_stamplist(get_iflow_by_hour(iflow_list, date_object, cur_hour),cur_hour, date_object)
+        msg = "Successfully Export"
+    return html.Div(msg)
 
 if __name__ == '__main__':
-    FILE_PATH = 'test.json'
+    cpi_scheduler_dump.main()
+    FILE_PATH = 'scheluer_dumps.json'
     iflow_list = []
-
+    if not os.path.exists(FILE_PATH):
+        print("File does not exist.")
+        exit(1)
+        
     with open(FILE_PATH, "r") as file:
         iflow_list = json.load(file)
 
@@ -318,9 +353,12 @@ if __name__ == '__main__':
         ], style={'display': 'inline-block', 'width': '100%'}),
         html.Div([
 
-            dash_table.DataTable(data=[], page_size=10, id='dtable')
+            dash_table.DataTable(data=[], page_size=10, id='dtable'),
+            html.Button('Export to file', id='btn-nclicks-1', n_clicks=0),
+            html.Div(id='container-button-timestamp')
 
         ], style={'display': 'inline-block'}),
+       
 
 
     ], style={'text-align': 'center'})

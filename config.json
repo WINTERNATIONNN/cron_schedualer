@@ -1,0 +1,15 @@
+{
+    "descriptions":"Basic/oAuth2.0 for auth_type,",
+    "auth_type": "Basic",
+    "basic_password": "EmilyPrentiss1012",
+    "basic_username": "winter.ou@sap.com",
+    "cpi_tenant_url": "https://integration-suite-x6woleh8.it-cpitrial03.cfapps.ap21.hana.ondemand.com",
+    "oauth_client_id": "sb-f26f6644-b2cf-498c-ba1f-d979314d8956!b22167|it!b196",
+    "oauth_client_secret": "6c1b7059-96e3-4565-896f-988d17ca16e7$svtQBgxTLLkbtRwmSs_75Uh23TUZ0TdWA7vGnQ7fmrc=",
+    "oauth_grant_type": "client_credentials",
+    "oauth_header_prefix": "Bearer",
+    "oauth_token_url": "https://integration-suite-x6woleh8.authentication.ap21.hana.ondemand.com/oauth/token",
+    "result_output_path": "scheluer_dumps.json",
+    "temp_working_folder_with_write_access": "/Users/I741185/Desktop",
+    "temp_not_used": "/Users/I741185/Documents/hierarchy/Projects/BTP/CommonUtils/utils_py/cpi/config.json"
+}
