@@ -1,6 +1,7 @@
 # Cron Schedualer
 
 A tool visualize iFlow schedule with given date. 
+
 **Credit**: Brady Holt (http://www.geekytidbits.com), Adam Schubert (https://www.salamek.cz)  
 ## Requirement
 Filled config.json accordingly. Enviorment stated in requirement.txt
@@ -11,14 +12,15 @@ python demo.py
 ```
 Dash running on http://127.0.0.1:8050/
 Select any day of the month you want to view. 
-
+![Kiku](image/select.png)
 The 1st graph shows the number of iflow of the month. Hover to see number of iFlow on the given day.
+![Kiku](image/month.png)
 Click on the bar of the day you want to view.
-
 The 2nd graph shows the number of iflow of the day. Hover to see number of iFlow on the given hour.
+![Kiku](image/day.png)
 Click on the bar of the time period (hourly) you want to view.
-
 The 3rd graph shows the number of iflow of the hour. Fequency and number are shown. 
+![Kiku](image/hourly.png)
 Click on the bar of certain time period (minute wise) will display the iFlow execute during this time and its fequency. 
 Click export will export the .cvs file containing
 
